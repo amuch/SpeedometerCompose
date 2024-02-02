@@ -3,9 +3,7 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Looper
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -14,7 +12,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import net.ddns.muchserver.speedometercompose.MainActivity
 import java.lang.ref.WeakReference
@@ -28,46 +25,45 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
 
     private val activity: WeakReference<Activity>
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
 
     init {
         this.activity = WeakReference(activity)
-
         getLocationUpdates()
     }
-
-    companion object {
-        var speed by mutableStateOf(0.0f)
-        var speedMax by mutableStateOf(0.0f)
-        var latitude by mutableStateOf(0.0000)
-        var longitude by mutableStateOf(0.0000)
-        var requestingUpdates by mutableStateOf(false)
-    }
+    var speed: MutableLiveData<Float> = MutableLiveData(0.0f)
+    var speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
+    var latitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    var longitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    var requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
 
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates() {
-        println("request updates")
         if(MainActivity.permissionsGranted) {
             coroutineScope.launch {
                 fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-                requestingUpdates = true
+                requestingUpdates.value = true
             }
         }
     }
 
     fun stopLocationUpdates() {
         coroutineScope.launch {
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-            requestingUpdates = false
+            val removeTask = fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+            removeTask.addOnCompleteListener { task ->
+                if(task.isSuccessful) {
+                    requestingUpdates.value = false
+                }
+                else {
+                    println("Failed to stop updates.")
+                }
+            }
         }
     }
 
     private fun getLocationUpdates() {
-        println("get updates")
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity.get()!!)
         locationRequest = LocationRequest()
         locationRequest.interval = INTERVAL_LOCATION_REQUEST
@@ -83,11 +79,11 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
                 if(locationResult.locations.isNotEmpty()) {
                     val location = locationResult.lastLocation
                     println("Speed: ${location.speed}")
-                    latitude = location.latitude
-                    longitude = location.longitude
-                    speed = location.speed * CONVERSION_MPS_TO_MPH
-                    if(speed > speedMax) {
-                        speedMax = speed
+                    latitude.value = location.latitude
+                    longitude.value = location.longitude
+                    speed.value = location.speed * CONVERSION_MPS_TO_MPH
+                    if(speed.value!! > speedMax.value!!) {
+                        speedMax.value = speed.value
                     }
                 }
             }
