@@ -12,9 +12,12 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalConfiguration
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
+import java.text.DecimalFormat
+
+
 
 @Composable
-fun SpeedometerDigital(speedometerViewModel: SpeedometerViewModel) {
+fun SpeedometerDigital(modifier: Modifier, speedometerViewModel: SpeedometerViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -32,30 +35,32 @@ fun SpeedometerDigital(speedometerViewModel: SpeedometerViewModel) {
     }
 
     Canvas(
-        modifier = Modifier.fillMaxSize(),
-        onDraw = {
-            drawIntoCanvas {
-                it.nativeCanvas.drawText(
-                    "$orientation Width: $screenWidth Height: $screenHeight",
-                    (screenWidth / 3).toFloat(),
-                    (screenHeight / 10).toFloat(),
-                    textPaint
-                )
+        modifier = modifier,
+//        onDraw = {
+//            drawIntoCanvas {
+//                it.nativeCanvas.drawText(
+//                    "$orientation Width: $screenWidth Height: $screenHeight",
+//                    (screenWidth / 3).toFloat(),
+//                    (screenHeight / 10).toFloat(),
+//                    textPaint
+//                )
+//
+//                it.nativeCanvas.drawText(
+//                    "Speed: ${DECIMAL_FORMAT.format(speed)}",
+//                    (screenWidth / 2).toFloat(),
+//                    (screenHeight / 2).toFloat(),
+//                    textPaint
+//                )
+//
+//                it.nativeCanvas.drawText(
+//                    "Max Speed: ${DECIMAL_FORMAT.format(speedMax)}",
+//                    (screenWidth / 2).toFloat(),
+//                    (2 * screenHeight / 3).toFloat(),
+//                    textPaint
+//                )
+//            }
+//        }
+    ) {
 
-                it.nativeCanvas.drawText(
-                    "Speed: $speed",
-                    (screenWidth / 2).toFloat(),
-                    (screenHeight / 2).toFloat(),
-                    textPaint
-                )
-
-                it.nativeCanvas.drawText(
-                    "Max Speed: $speedMax",
-                    (screenWidth / 2).toFloat(),
-                    (2 * screenHeight / 3).toFloat(),
-                    textPaint
-                )
-            }
-        }
-    )
+    }
 }

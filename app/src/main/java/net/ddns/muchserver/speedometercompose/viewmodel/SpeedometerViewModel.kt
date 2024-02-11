@@ -2,7 +2,10 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
+import android.os.Build
 import android.os.Looper
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -14,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.ddns.muchserver.speedometercompose.MainActivity
+import net.ddns.muchserver.speedometercompose.service.ServiceForeground
 import java.lang.ref.WeakReference
 
 const val INTERVAL_LOCATION_REQUEST = 500L
@@ -33,11 +37,16 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
         this.activity = WeakReference(activity)
         getLocationUpdates()
     }
+
     var speed: MutableLiveData<Float> = MutableLiveData(0.0f)
     var speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
     var latitude: MutableLiveData<Double> = MutableLiveData(0.0)
     var longitude: MutableLiveData<Double> = MutableLiveData(0.0)
     var requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
+
+    fun resetSpeedMax() {
+        speedMax.value = 0.0f
+    }
 
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates() {
@@ -72,6 +81,7 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         locationCallback = object : LocationCallback() {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
 
@@ -84,6 +94,16 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
                     speed.value = location.speed * CONVERSION_MPS_TO_MPH
                     if(speed.value!! > speedMax.value!!) {
                         speedMax.value = speed.value
+
+                        val serviceRunning = ServiceForeground.serviceRunning
+                        if(serviceRunning) {
+                            val context = activity.get()
+                            Intent(context, ServiceForeground::class.java).also {
+                                it.action = ServiceForeground.Actions.UPDATE.toString()
+                                it.putExtra("speedMax", speedMax.value)
+                                context!!.startService(it)
+                            }
+                        }
                     }
                 }
             }

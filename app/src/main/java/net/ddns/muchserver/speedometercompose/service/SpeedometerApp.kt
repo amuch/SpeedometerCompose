@@ -10,6 +10,7 @@ const val CHANNEL_SPEEDOMETER = "speedometer_channel"
 const val NAME_NOTIFICATION = "Speedometer Notification"
 
 class SpeedometerApp: Application() {
+
     override fun onCreate() {
         super.onCreate()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
