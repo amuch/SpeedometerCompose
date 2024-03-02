@@ -24,6 +24,7 @@ const val INTERVAL_LOCATION_REQUEST = 500L
 const val INTERVAL_LOCATION_REQUEST_FASTEST = 500L
 const val DISPLACEMENT_MILE_ONE_TENTH = 170f
 const val CONVERSION_MPS_TO_MPH = 2.236936f
+const val CONVERSION_METERS_TO_FEET = 3.28084f
 
 class SpeedometerViewModel(activity: Activity) : ViewModel() {
 
@@ -38,11 +39,13 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
         getLocationUpdates()
     }
 
-    var speed: MutableLiveData<Float> = MutableLiveData(0.0f)
-    var speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
-    var latitude: MutableLiveData<Double> = MutableLiveData(0.0)
-    var longitude: MutableLiveData<Double> = MutableLiveData(0.0)
-    var requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
+    val speed: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val latitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    val longitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    val bearing: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val altitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    val requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun resetSpeedMax() {
         speedMax.value = 0.0f
@@ -88,22 +91,28 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
                 println("Location update")
                 if(locationResult.locations.isNotEmpty()) {
                     val location = locationResult.lastLocation
-                    println("Speed: ${location.speed}")
+                    println("Speed: $location")
                     latitude.value = location.latitude
                     longitude.value = location.longitude
                     speed.value = location.speed * CONVERSION_MPS_TO_MPH
+                    if(location.hasAltitude()) {
+                        altitude.value = location.altitude * CONVERSION_METERS_TO_FEET
+                    }
+                    if(location.hasBearing()) {
+                        bearing.value = location.bearing
+                    }
                     if(speed.value!! > speedMax.value!!) {
                         speedMax.value = speed.value
 
-                        val serviceRunning = ServiceForeground.serviceRunning
-                        if(serviceRunning) {
-                            val context = activity.get()
-                            Intent(context, ServiceForeground::class.java).also {
-                                it.action = ServiceForeground.Actions.UPDATE.toString()
-                                it.putExtra("speedMax", speedMax.value)
-                                context!!.startService(it)
-                            }
-                        }
+//                        val serviceRunning = ServiceForeground.serviceRunning
+//                        if(serviceRunning) {
+//                            val context = activity.get()
+//                            Intent(context, ServiceForeground::class.java).also {
+//                                it.action = ServiceForeground.Actions.UPDATE.toString()
+//                                it.putExtra("speedMax", speedMax.value)
+//                                context!!.startService(it)
+//                            }
+//                        }
                     }
                 }
             }
