@@ -8,15 +8,11 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import net.ddns.muchserver.speedometercompose.MainActivity
+import net.ddns.muchserver.speedometercompose.repository.KEY_THEME
 import net.ddns.muchserver.speedometercompose.repository.THEME_DARK
 import net.ddns.muchserver.speedometercompose.repository.THEME_LIGHT
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
@@ -32,11 +28,11 @@ fun ButtonSetting(
 
     Button(
         onClick = {
-            if(preferencesViewModel.readFromDataStore.value!! == THEME_LIGHT) {
-                preferencesViewModel.saveToDataStore(THEME_DARK)
+            if(preferencesViewModel.readFromDataStore.value!!.theme == THEME_LIGHT) {
+                preferencesViewModel.saveToDataStore(KEY_THEME, THEME_DARK)
             }
             else {
-                preferencesViewModel.saveToDataStore(THEME_LIGHT)
+                preferencesViewModel.saveToDataStore(KEY_THEME, THEME_LIGHT)
             }
         },
         modifier = modifier,
@@ -52,7 +48,7 @@ fun ButtonSetting(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = preferencesViewModel.readFromDataStore.value!!,
+                text = preferencesViewModel.readFromDataStore.value!!.theme,
                 color = colorText
             )
         }

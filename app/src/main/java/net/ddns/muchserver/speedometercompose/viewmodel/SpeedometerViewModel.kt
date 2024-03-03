@@ -13,6 +13,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import java.lang.ref.WeakReference
 
 const val INTERVAL_LOCATION_REQUEST = 500L
 const val INTERVAL_LOCATION_REQUEST_FASTEST = 500L
+const val INTERVAL_MAP_UPDATE = 10000L
 const val DISPLACEMENT_MILE_ONE_TENTH = 170f
 const val CONVERSION_MPS_TO_MPH = 2.236936f
 const val CONVERSION_METERS_TO_FEET = 3.28084f
@@ -46,6 +48,8 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
     val bearing: MutableLiveData<Float> = MutableLiveData(0.0f)
     val altitude: MutableLiveData<Double> = MutableLiveData(0.0)
     val requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
+    val latLng: MutableLiveData<LatLng> = MutableLiveData(LatLng(0.0, 0.0))
+    val lastUpdate: MutableLiveData<Long> = MutableLiveData(0L)
 
     fun resetSpeedMax() {
         speedMax.value = 0.0f
@@ -88,12 +92,14 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
 
-                println("Location update")
+//                println("Location update")
                 if(locationResult.locations.isNotEmpty()) {
                     val location = locationResult.lastLocation
                     println("Speed: $location")
                     latitude.value = location.latitude
                     longitude.value = location.longitude
+                    lastUpdate.value = System.currentTimeMillis()
+                    latLng.value = LatLng(location.latitude, location.longitude)
                     speed.value = location.speed * CONVERSION_MPS_TO_MPH
                     if(location.hasAltitude()) {
                         altitude.value = location.altitude * CONVERSION_METERS_TO_FEET

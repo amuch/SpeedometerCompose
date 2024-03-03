@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var preferencesViewModel: PreferencesViewModel
     private lateinit var theme: String
+    private var indexTheme: Int = 0
 
     private lateinit var settingsViewModel: SettingsViewModel
     companion object {
@@ -39,28 +40,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        speedometerViewModelFactory = SpeedometerViewModelFactory(this)
-        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
-
-        theme = THEME_LIGHT
-        preferencesViewModel = ViewModelProvider(this)[PreferencesViewModel::class.java]
-        preferencesViewModel.readFromDataStore.observe(this) { themeSet ->
-            theme = themeSet
-        }
-
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        settingsViewModel.settingsVisible.observe(this) {}
-        settingsViewModel.screenAwake.observe(this) {
-            if(it) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-            else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-        }
-
+        initializeViewModels()
         val activity = this
-//        hideSystemUI()
 
         activityResultLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -87,6 +68,31 @@ class MainActivity : ComponentActivity() {
         }
         else {
             Toast.makeText(applicationContext, R.string.location_services_denied, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun initializeViewModels() {
+        speedometerViewModelFactory = SpeedometerViewModelFactory(this)
+        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
+
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        settingsViewModel.settingsVisible.observe(this) {}
+        settingsViewModel.screenAwake.observe(this) {
+            if(it) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+            else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+        settingsViewModel.colorScheme.observe(this){}
+
+        theme = THEME_LIGHT
+        preferencesViewModel = ViewModelProvider(this)[PreferencesViewModel::class.java]
+        preferencesViewModel.readFromDataStore.observe(this) { preferences ->
+            theme = preferences.theme
+            indexTheme = preferences.indexTheme
+            settingsViewModel.setColorScheme(theme, indexTheme)
         }
     }
 

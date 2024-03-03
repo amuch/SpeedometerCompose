@@ -29,31 +29,13 @@ fun MainScreen(
     preferencesViewModel: PreferencesViewModel,
     settingsViewModel: SettingsViewModel,
 ) {
-
     val configuration = LocalConfiguration.current
     val orientation = configuration.orientation
 
-    var theme by remember { mutableStateOf(THEME_LIGHT) }
-    preferencesViewModel.readFromDataStore.observe(activity) { themeSet ->
-        theme = themeSet
+    var colorList by remember { mutableStateOf(settingsViewModel.lightTheme) }
+    settingsViewModel.colorScheme.observe(activity) { colors ->
+        colorList = colors
     }
-
-    val darkTheme = listOf(
-        Color(0xFF000000),
-        Color(0xFF000000),
-        Color(0xFFB8B6B5),
-        Color(0xFF8BC819),
-        Color(0xFFFCFCFC)
-    )
-    val lightTheme = listOf(
-        Color(0xFFFFFFFF),
-        Color(0xFFD9D9D9),
-        Color(0xFFD9D9D9),
-        Color(0xFFF1731C),
-        Color(0xFF585858)
-    )
-
-    val colorList = if(THEME_DARK == theme) darkTheme else lightTheme
 
     if(Configuration.ORIENTATION_PORTRAIT == orientation) {
         LayoutPortrait(

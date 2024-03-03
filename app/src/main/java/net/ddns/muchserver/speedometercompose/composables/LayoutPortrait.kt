@@ -2,13 +2,11 @@ package net.ddns.muchserver.speedometercompose.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -44,7 +42,7 @@ fun LayoutPortrait(
             speedometerViewModel = speedometerViewModel,
             colorList = colorList
         )
-        SettingsTab(
+        MapTab(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
@@ -52,8 +50,8 @@ fun LayoutPortrait(
             activity = activity,
             speedometerViewModel = speedometerViewModel,
             preferencesViewModel = preferencesViewModel,
-            colorList = colorList,
-            settingsViewModel = settingsViewModel
+            settingsViewModel = settingsViewModel,
+            colorList = colorList
         )
     }
 }

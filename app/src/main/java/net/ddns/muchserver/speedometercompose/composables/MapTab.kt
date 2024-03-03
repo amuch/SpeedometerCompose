@@ -5,11 +5,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -31,17 +32,16 @@ import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
 
 const val MILLISECONDS_ANIMATE_IN = 800
 const val MILLISECONDS_ANIMATE_OUT = 500
-
+const val ZOOM_DEFAULT = 11.0f
 @Composable
-fun SettingsTab(
+fun MapTab(
     modifier: Modifier,
     activity: MainActivity,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
-    colorList: List<Color>,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    colorList: List<Color>
 ) {
-
     var settingsVisible by remember { mutableStateOf(false) }
     settingsViewModel.settingsVisible.observe(activity) {
         settingsVisible = it
@@ -50,10 +50,22 @@ fun SettingsTab(
     val brushBackground = Brush.verticalGradient(
         colors = colorList.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
     )
-
+    val modifierBorder = Modifier
+        .padding(10.dp)
+        .border(2.dp, colorList[INDEX_COLOR_BUTTON_BACKGROUND], shape = RoundedCornerShape(10.dp))
     Box(
-        modifier = modifier
+        modifier = modifier.then(modifierBorder)
     ) {
+        Map(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp),
+            activity = activity,
+            speedometerViewModel = speedometerViewModel,
+            preferencesViewModel = preferencesViewModel,
+            settingsViewModel = settingsViewModel,
+            colorList = colorList
+        )
         Button(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -69,15 +81,9 @@ fun SettingsTab(
                 Text("Menu")
         }
 
-        Text(
-            text = "Place Map Here",
-            modifier = Modifier.align(Alignment.Center),
-            color = colorList[INDEX_COLOR_BUTTON_TEXT]
-        )
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(10.dp)
                 .fillMaxSize()
                 .background(
                     brush = brushBackground
