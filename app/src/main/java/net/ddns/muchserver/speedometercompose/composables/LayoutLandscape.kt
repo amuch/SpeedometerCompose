@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -21,11 +23,11 @@ fun LayoutLandscape(
     activity: MainActivity,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
-    colorList: List<Color>,
     settingsViewModel: SettingsViewModel
 ) {
+    val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.schemeLight(0))
     val brushBackground = Brush.verticalGradient(
-        colors = colorList.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
+        colors = colorScheme.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
     )
 
     Row(
@@ -40,7 +42,7 @@ fun LayoutLandscape(
                 .padding(10.dp)
                 .background(color = Color.Transparent),
             speedometerViewModel = speedometerViewModel,
-            colorList = colorList
+            settingsViewModel = settingsViewModel
         )
         MapTab(
             modifier = Modifier
@@ -50,8 +52,7 @@ fun LayoutLandscape(
             activity = activity,
             speedometerViewModel = speedometerViewModel,
             preferencesViewModel = preferencesViewModel,
-            settingsViewModel = settingsViewModel,
-            colorList = colorList
+            settingsViewModel = settingsViewModel
         )
     }
 }

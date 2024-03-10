@@ -1,4 +1,4 @@
-package net.ddns.muchserver.speedometercompose.repository
+package net.ddns.muchserver.speedometercompose.preferences
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -17,11 +17,13 @@ const val THEME_DARK = "Dark"
 const val PREFERENCES = "preferences"
 const val KEY_THEME = "theme"
 const val KEY_INDEX_THEME = "indexTheme"
+const val KEY_STANDARD_UNITS = "standardUnits"
 
 class DataStoreRepository(context: Context) {
     private object PreferenceKeys {
         val theme = preferencesKey<String>(KEY_THEME)
         val indexTheme = preferencesKey<Int>(KEY_INDEX_THEME)
+        val standardUnits = preferencesKey<Boolean>(KEY_STANDARD_UNITS)
     }
 
     private val dataStore: DataStore<Preferences> = context.createDataStore(
@@ -32,7 +34,8 @@ class DataStoreRepository(context: Context) {
         dataStore.edit { preference ->
             when(key) {
                 KEY_THEME -> preference[PreferenceKeys.theme] = any as String
-                KEY_INDEX_THEME -> preference[PreferenceKeys.indexTheme] =  any as Int
+                KEY_INDEX_THEME -> preference[PreferenceKeys.indexTheme] = any as Int
+                KEY_STANDARD_UNITS -> preference[PreferenceKeys.standardUnits] = any as Boolean
             }
         }
     }
@@ -50,27 +53,7 @@ class DataStoreRepository(context: Context) {
         .map { preferences ->
             val theme = preferences[PreferenceKeys.theme] ?: THEME_LIGHT
             val indexTheme = preferences[PreferenceKeys.indexTheme] ?: 0
-            UserPreferences(theme, indexTheme)
+            val standardUnits = preferences[PreferenceKeys.standardUnits] ?: true
+            UserPreferences(theme, indexTheme, standardUnits)
     }
-
-    suspend fun saveThemeToDataStore(theme: String) {
-        dataStore.edit { preference ->
-            preference[PreferenceKeys.theme] = theme
-        }
-    }
-
-    val readThemeFromDataStore: Flow<String> = dataStore.data
-        .catch { exception ->
-            if(exception is IOException) {
-                println(exception.message.toString())
-                emit(emptyPreferences())
-            }
-            else {
-                throw exception
-            }
-        }
-        .map { preference ->
-            val theme = preference[PreferenceKeys.theme] ?: THEME_LIGHT
-            theme
-        }
 }

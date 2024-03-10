@@ -3,6 +3,7 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import android.os.Looper
 import androidx.annotation.RequiresApi
@@ -20,14 +21,20 @@ import kotlinx.coroutines.launch
 import net.ddns.muchserver.speedometercompose.MainActivity
 import net.ddns.muchserver.speedometercompose.service.ServiceForeground
 import java.lang.ref.WeakReference
+import java.util.Calendar
 
 const val INTERVAL_LOCATION_REQUEST = 500L
 const val INTERVAL_LOCATION_REQUEST_FASTEST = 500L
-const val INTERVAL_MAP_UPDATE = 10000L
+const val INTERVAL_MAP_UPDATE = 60000L
 const val DISPLACEMENT_MILE_ONE_TENTH = 170f
 const val CONVERSION_MPS_TO_MPH = 2.236936f
+const val CONVERSION_MPS_TO_KPH = 3.6f
+const val CONVERSION_METERS_TO_MILES = 0.0006213712f
 const val CONVERSION_METERS_TO_FEET = 3.28084f
-
+const val CONVERSION_METERS_TO_KM = 1000
+const val CAPACITY_LAT_LNG_LIST = 30
+const val DISPLACEMENT_MIN_LAT_LNG = 0.001
+const val LAT_LNG_DEFAULT = 0.0
 class SpeedometerViewModel(activity: Activity) : ViewModel() {
 
     private val activity: WeakReference<Activity>
@@ -36,20 +43,22 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
 
+    val speed: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val latitude: MutableLiveData<Double> = MutableLiveData(LAT_LNG_DEFAULT)
+    val longitude: MutableLiveData<Double> = MutableLiveData(LAT_LNG_DEFAULT)
+    val bearing: MutableLiveData<Float> = MutableLiveData(0.0f)
+    val altitude: MutableLiveData<Double> = MutableLiveData(0.0)
+    val requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
+    val latLng: MutableLiveData<LatLng> = MutableLiveData(LatLng(LAT_LNG_DEFAULT, LAT_LNG_DEFAULT))
+    val lastUpdate: MutableLiveData<Long> = MutableLiveData(0L)
+    private val locations = ArrayList<LatLng>()
+    val listLocations: MutableLiveData<ArrayList<LatLng>> = MutableLiveData(locations)
+    val distance: MutableLiveData<Double> = MutableLiveData(0.0)
     init {
         this.activity = WeakReference(activity)
         getLocationUpdates()
     }
-
-    val speed: MutableLiveData<Float> = MutableLiveData(0.0f)
-    val speedMax: MutableLiveData<Float> = MutableLiveData(0.0f)
-    val latitude: MutableLiveData<Double> = MutableLiveData(0.0)
-    val longitude: MutableLiveData<Double> = MutableLiveData(0.0)
-    val bearing: MutableLiveData<Float> = MutableLiveData(0.0f)
-    val altitude: MutableLiveData<Double> = MutableLiveData(0.0)
-    val requestingUpdates: MutableLiveData<Boolean> = MutableLiveData(false)
-    val latLng: MutableLiveData<LatLng> = MutableLiveData(LatLng(0.0, 0.0))
-    val lastUpdate: MutableLiveData<Long> = MutableLiveData(0L)
 
     fun resetSpeedMax() {
         speedMax.value = 0.0f
@@ -92,17 +101,24 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
 
-//                println("Location update")
                 if(locationResult.locations.isNotEmpty()) {
                     val location = locationResult.lastLocation
-                    println("Speed: $location")
+
                     latitude.value = location.latitude
                     longitude.value = location.longitude
-                    lastUpdate.value = System.currentTimeMillis()
-                    latLng.value = LatLng(location.latitude, location.longitude)
-                    speed.value = location.speed * CONVERSION_MPS_TO_MPH
+
+                    val timeCurrent = System.currentTimeMillis()
+                    if(timeCurrent - lastUpdate.value!! > INTERVAL_MAP_UPDATE) {
+                        lastUpdate.value = timeCurrent
+
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        latLng.value = currentLatLng
+                        addLocation(currentLatLng)
+                        addDistance(currentLatLng)
+                    }
+                    speed.value = location.speed
                     if(location.hasAltitude()) {
-                        altitude.value = location.altitude * CONVERSION_METERS_TO_FEET
+                        altitude.value = location.altitude
                     }
                     if(location.hasBearing()) {
                         bearing.value = location.bearing
@@ -123,5 +139,36 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
                 }
             }
         }
+    }
+
+    private fun addLocation(latLng: LatLng) {
+        val currentTime = Calendar.getInstance().time
+        println("$currentTime")
+        if(locations.size == 0) {
+            locations.add(latLng)
+            return
+        }
+        val latLngPrevious = locations.lastOrNull()
+        if(latLng.latitude - latLngPrevious!!.latitude > DISPLACEMENT_MIN_LAT_LNG ||
+           latLng.longitude - latLngPrevious!!.longitude > DISPLACEMENT_MIN_LAT_LNG) {
+            locations.add(latLng)
+        }
+    }
+
+    private fun addDistance(latLng: LatLng) {
+        if(locations.size < 1) {
+            return
+        }
+        val latLngPrevious = locations.lastOrNull()
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            latLngPrevious!!.latitude,
+            latLngPrevious!!.longitude,
+            latLng.latitude,
+            latLng.longitude,
+            results
+        )
+        distance!!.value = distance!!.value?.plus(results[0])
+        println("Distance: ${distance!!.value}")
     }
 }

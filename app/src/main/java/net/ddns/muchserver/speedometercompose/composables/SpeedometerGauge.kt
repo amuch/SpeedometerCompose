@@ -7,9 +7,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -25,9 +22,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-import net.ddns.muchserver.speedometercompose.MainActivity
-import net.ddns.muchserver.speedometercompose.repository.THEME_LIGHT
-import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_FEET
+import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_KM
+import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_MILES
+import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_MPS_TO_KPH
+import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_MPS_TO_MPH
+import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
 import java.text.DecimalFormat
 import kotlin.math.cos
@@ -42,7 +42,7 @@ val COORDINATE_FORMAT = DecimalFormat("#.####")
 fun SpeedometerGauge(
     modifier: Modifier,
     speedometerViewModel: SpeedometerViewModel,
-    colorList: List<Color>
+    settingsViewModel: SettingsViewModel
 ) {
     val speed: Float by speedometerViewModel.speed.observeAsState(0.0f)
     val speedMax: Float by speedometerViewModel.speedMax.observeAsState(0.0f)
@@ -50,16 +50,19 @@ fun SpeedometerGauge(
     val longitude: Double by speedometerViewModel.longitude.observeAsState(0.0)
     val altitude: Double by speedometerViewModel.altitude.observeAsState(0.0)
     val bearing: Float by speedometerViewModel.bearing.observeAsState(0.0f)
+    val distance: Double by speedometerViewModel.distance.observeAsState(0.0)
 
     val scaleMax = scaleMax(speedMax)
     val angleRotation = (speed / scaleMax) * 180 - 90
 
+    val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.schemeLight(0))
+    val colorGauge = colorScheme[INDEX_COLOR_BUTTON_BACKGROUND]
+    val colorText = colorScheme[INDEX_COLOR_BUTTON_TEXT]
     val brushBackground = Brush.verticalGradient(
-        colors = colorList.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
+        colors = colorScheme.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
     )
 
-    val colorGauge = colorList[INDEX_COLOR_BUTTON_BACKGROUND]
-    val colorText = colorList[INDEX_COLOR_BUTTON_TEXT]
+    val standardUnits: Boolean by settingsViewModel.standardUnits.observeAsState(true)
 
     val modifierBorder = Modifier.border(2.dp, colorGauge, shape = RoundedCornerShape(10.dp))
     Canvas(
@@ -185,13 +188,13 @@ fun SpeedometerGauge(
                 textPaintCoordinate
             )
             it.nativeCanvas.drawText(
-                "${DECIMAL_FORMAT.format(speed)} MPH",
+                formatSpeed(speed, standardUnits),
                 size.width / 2 - 2 * segment,
                 size.height / 2 + 2 * textSizeLocal + segment,
                 textPaint
             )
             it.nativeCanvas.drawText(
-                "Max: ${DECIMAL_FORMAT.format(speedMax)} MPH",
+                "Max: ${formatSpeed(speedMax, standardUnits)}",
                 size.width / 3,
                 size.height / 2 + 3 * textSizeLocal + 2 * segment,
                 textPaint
@@ -233,6 +236,13 @@ fun SpeedometerGauge(
             )
 
             it.nativeCanvas.drawText(
+                formatDistance(distance, standardUnits),
+                segment,
+                size.height - textSizeCoordinate,
+                textPaintCoordinate
+            )
+
+            it.nativeCanvas.drawText(
                 calculateDirection(bearing),
                 center.x,
                 size.height - textSizeCoordinate,
@@ -240,13 +250,37 @@ fun SpeedometerGauge(
             )
 
             it.nativeCanvas.drawText(
-                "${DECIMAL_FORMAT.format(altitude)} ft",
+                formatAltitude(altitude, standardUnits),
                 2 * size.width / 3,
                 size.height - textSizeCoordinate,
                 textPaintCoordinate
             )
         }
     }
+}
+
+fun formatAltitude(altitude: Double, standardUnits: Boolean): String {
+    if(standardUnits) {
+        return "${DECIMAL_FORMAT.format(altitude * CONVERSION_METERS_TO_FEET)} ft"
+    }
+
+    return "${DECIMAL_FORMAT.format(altitude)} m"
+}
+
+fun formatSpeed(speed: Float, standardUnits: Boolean): String {
+    if(standardUnits) {
+        return "${DECIMAL_FORMAT.format(speed * CONVERSION_MPS_TO_MPH)} MPH"
+    }
+
+    return "${DECIMAL_FORMAT.format(speed * CONVERSION_MPS_TO_KPH)} KPH"
+}
+
+fun formatDistance(distance: Double, standardUnits: Boolean): String {
+    if(standardUnits) {
+        return "${DECIMAL_FORMAT.format(distance * CONVERSION_METERS_TO_MILES)} mi"
+    }
+
+    return "${DECIMAL_FORMAT.format(distance * CONVERSION_METERS_TO_KM)} km"
 }
 
 fun scaleMax(speed: Float): Float {

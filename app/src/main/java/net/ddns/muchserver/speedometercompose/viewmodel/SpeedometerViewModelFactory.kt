@@ -3,6 +3,7 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.maps.model.LatLng
 import java.lang.IllegalArgumentException
 
 const val ERROR_UNKNOWN_VIEW_MODEL = "Unknown View Model Class"

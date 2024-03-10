@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import net.ddns.muchserver.speedometercompose.composables.MainScreen
-import net.ddns.muchserver.speedometercompose.repository.THEME_LIGHT
+import net.ddns.muchserver.speedometercompose.preferences.THEME_LIGHT
 
 import net.ddns.muchserver.speedometercompose.ui.theme.SpeedometerComposeTheme
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var preferencesViewModel: PreferencesViewModel
     private lateinit var theme: String
     private var indexTheme: Int = 0
+    private var standardUnits: Boolean = true
 
     private lateinit var settingsViewModel: SettingsViewModel
     companion object {
@@ -72,9 +73,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeViewModels() {
-        speedometerViewModelFactory = SpeedometerViewModelFactory(this)
-        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
-
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
         settingsViewModel.settingsVisible.observe(this) {}
         settingsViewModel.screenAwake.observe(this) {
@@ -93,7 +91,12 @@ class MainActivity : ComponentActivity() {
             theme = preferences.theme
             indexTheme = preferences.indexTheme
             settingsViewModel.setColorScheme(theme, indexTheme)
+            standardUnits = preferences.standardUnits
+            settingsViewModel.standardUnits.value = standardUnits
         }
+
+        speedometerViewModelFactory = SpeedometerViewModelFactory(this)
+        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
     }
 
     private fun hideSystemUI() {

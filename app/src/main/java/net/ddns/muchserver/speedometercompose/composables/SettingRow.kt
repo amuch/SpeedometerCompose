@@ -3,8 +3,6 @@ package net.ddns.muchserver.speedometercompose.composables
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,9 +37,10 @@ fun SettingRow(
     setCheckedOn: () -> Unit,
     setCheckedOff: () -> Unit,
     messages: Array<String>,
-    index: Int
+    index: Int,
+    composable: @Composable (() -> Unit)? = null
 ) {
-    val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.lightTheme)
+    val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.schemeLight(0))
     val indexOpen: Int by settingsViewModel.indexOpenSetting.observeAsState(0)
 
     Column(
@@ -96,6 +95,17 @@ fun SettingRow(
                     text= "?",
                     color = colorScheme[INDEX_COLOR_BUTTON_TEXT]
                 )
+            }
+        }
+        if(composable != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                composable()
             }
         }
         AnimatedVisibility(

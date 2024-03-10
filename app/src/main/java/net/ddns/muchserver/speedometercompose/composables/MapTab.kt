@@ -17,6 +17,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,20 +40,21 @@ fun MapTab(
     activity: MainActivity,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
-    settingsViewModel: SettingsViewModel,
-    colorList: List<Color>
+    settingsViewModel: SettingsViewModel
 ) {
     var settingsVisible by remember { mutableStateOf(false) }
     settingsViewModel.settingsVisible.observe(activity) {
         settingsVisible = it
     }
 
+    val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.schemeLight(0))
     val brushBackground = Brush.verticalGradient(
-        colors = colorList.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
+        colors = colorScheme.subList(INDEX_COLOR_PRIMARY, INDEX_COLOR_TERTIARY + 1)
     )
+
     val modifierBorder = Modifier
         .padding(10.dp)
-        .border(2.dp, colorList[INDEX_COLOR_BUTTON_BACKGROUND], shape = RoundedCornerShape(10.dp))
+        .border(2.dp, colorScheme[INDEX_COLOR_BUTTON_BACKGROUND], shape = RoundedCornerShape(10.dp))
     Box(
         modifier = modifier.then(modifierBorder)
     ) {
@@ -64,7 +66,6 @@ fun MapTab(
             speedometerViewModel = speedometerViewModel,
             preferencesViewModel = preferencesViewModel,
             settingsViewModel = settingsViewModel,
-            colorList = colorList
         )
         Button(
             modifier = Modifier
@@ -74,8 +75,8 @@ fun MapTab(
                 settingsViewModel.openSettings()
             },
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = colorList[INDEX_COLOR_BUTTON_BACKGROUND],
-                contentColor = colorList[INDEX_COLOR_BUTTON_TEXT]
+                backgroundColor = colorScheme[INDEX_COLOR_BUTTON_BACKGROUND],
+                contentColor = colorScheme[INDEX_COLOR_BUTTON_TEXT]
             )
         ) {
                 Text("Menu")
@@ -103,7 +104,6 @@ fun MapTab(
                 activity = activity,
                 speedometerViewModel = speedometerViewModel,
                 preferencesViewModel = preferencesViewModel,
-                colorList = colorList,
                 settingsViewModel = settingsViewModel
             )
         }
