@@ -30,6 +30,7 @@ import net.ddns.muchserver.speedometercompose.MainActivity
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
 
 const val MILLISECONDS_ANIMATE_IN = 800
 const val MILLISECONDS_ANIMATE_OUT = 500
@@ -38,6 +39,7 @@ const val ZOOM_DEFAULT = 11.0f
 fun MapTab(
     modifier: Modifier,
     activity: MainActivity,
+    tripViewModel: TripViewModel,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
     settingsViewModel: SettingsViewModel
@@ -102,6 +104,7 @@ fun MapTab(
                     )
                     .verticalScroll(scrollState),
                 activity = activity,
+                tripViewModel = tripViewModel,
                 speedometerViewModel = speedometerViewModel,
                 preferencesViewModel = preferencesViewModel,
                 settingsViewModel = settingsViewModel

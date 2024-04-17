@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.model.LatLng
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_FEET
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_KM
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_MILES
@@ -52,9 +53,6 @@ fun SpeedometerGauge(
     val bearing: Float by speedometerViewModel.bearing.observeAsState(0.0f)
     val distance: Double by speedometerViewModel.distance.observeAsState(0.0)
 
-    val scaleMax = scaleMax(speedMax)
-    val angleRotation = (speed / scaleMax) * 180 - 90
-
     val colorScheme: List<Color> by settingsViewModel.colorScheme.observeAsState(settingsViewModel.schemeLight(0))
     val colorGauge = colorScheme[INDEX_COLOR_BUTTON_BACKGROUND]
     val colorText = colorScheme[INDEX_COLOR_BUTTON_TEXT]
@@ -63,6 +61,8 @@ fun SpeedometerGauge(
     )
 
     val standardUnits: Boolean by settingsViewModel.standardUnits.observeAsState(true)
+    val scaleMax = scaleMax(speedMax, standardUnits)
+    val angleRotation = (speedScaled(speed, standardUnits) / scaleMax) * 180 - 90
 
     val modifierBorder = Modifier.border(2.dp, colorGauge, shape = RoundedCornerShape(10.dp))
     Canvas(
@@ -83,6 +83,16 @@ fun SpeedometerGauge(
             typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
             textSize = textSizeCoordinate
         }
+
+        val brushNeedle = Brush.horizontalGradient(
+            colors = listOf(
+                colorScheme[INDEX_COLOR_BUTTON_BACKGROUND],
+//                colorScheme[INDEX_COLOR_BUTTON_BACKGROUND],
+                colorScheme[INDEX_COLOR_BUTTON_TEXT],
+//                colorScheme[INDEX_COLOR_TERTIARY],
+//                colorScheme[INDEX_COLOR_BUTTON_BACKGROUND]
+            )
+        )
         drawRoundRect(
             brush = brushBackground,
             cornerRadius = CornerRadius(
@@ -95,7 +105,7 @@ fun SpeedometerGauge(
         val segment = sideShorter / 30
         val pathNeedle = Path().apply {
             moveTo(size.width / 2 - segment, size.height / 2) // left
-            lineTo(size.width / 2, size.height / 4) // top
+            lineTo(size.width / 2, 0.28f * size.height) // top
             lineTo(size.width / 2 + segment, size.height / 2) // right
             lineTo(size.width / 2, size.height / 2 + 3 * segment) // bottom
             lineTo(size.width / 2 - segment, size.height / 2) // left
@@ -104,6 +114,7 @@ fun SpeedometerGauge(
         rotate(angleRotation) {
             drawPath(
                 path = pathNeedle,
+//                brush = brushNeedle,
                 color = colorGauge
             )
         }
@@ -159,7 +170,7 @@ fun SpeedometerGauge(
         drawArc(
             color = colorGauge,
             startAngle = -180f,
-            sweepAngle = speedMax / scaleMax * 180f,
+            sweepAngle = speedScaled(speedMax, standardUnits) / scaleMax * 180f,
             useCenter = false,
             topLeft = Offset(
                 x = size.width / 2  - radius,
@@ -283,24 +294,32 @@ fun formatDistance(distance: Double, standardUnits: Boolean): String {
     return "${DECIMAL_FORMAT.format(distance * CONVERSION_METERS_TO_KM)} km"
 }
 
-fun scaleMax(speed: Float): Float {
-    if(speed > 100) {
+fun speedScaled(speed: Float, standardUnits: Boolean): Float {
+    if(standardUnits) {
+        return speed * CONVERSION_MPS_TO_MPH
+    }
+    return speed * CONVERSION_MPS_TO_KPH
+}
+
+fun scaleMax(speed: Float, standardUnits: Boolean): Float {
+    val scaled = speedScaled(speed, standardUnits)
+    if(scaled > 100) {
         return 250f
     }
 
-    if(speed > 60) {
+    if(scaled > 60) {
         return 100f
     }
 
-    if(speed > 30) {
+    if(scaled > 30) {
         return 60f
     }
 
-    if(speed > 10) {
+    if(scaled > 10) {
         return 30f
     }
 
-    if(speed > 4) {
+    if(scaled > 4) {
         return 10f
     }
 
@@ -346,9 +365,4 @@ fun calculateDirection(bearing: Float): String {
     }
 
     return "N"
-}
-
-fun rotationAngle(speed: Float): Float {
-    val scaleMax = scaleMax(speed)
-    return (speed / scaleMax) * 180 - 90
 }

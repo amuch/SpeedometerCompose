@@ -25,15 +25,15 @@ import java.util.Calendar
 
 const val INTERVAL_LOCATION_REQUEST = 500L
 const val INTERVAL_LOCATION_REQUEST_FASTEST = 500L
-const val INTERVAL_MAP_UPDATE = 60000L
+const val INTERVAL_MAP_UPDATE = 45000L
 const val DISPLACEMENT_MILE_ONE_TENTH = 170f
 const val CONVERSION_MPS_TO_MPH = 2.236936f
 const val CONVERSION_MPS_TO_KPH = 3.6f
 const val CONVERSION_METERS_TO_MILES = 0.0006213712f
 const val CONVERSION_METERS_TO_FEET = 3.28084f
-const val CONVERSION_METERS_TO_KM = 1000
+const val CONVERSION_METERS_TO_KM = 0.001f
 const val CAPACITY_LAT_LNG_LIST = 30
-const val DISPLACEMENT_MIN_LAT_LNG = 0.001
+const val DISPLACEMENT_MIN_LAT_LNG = 0.0005
 const val LAT_LNG_DEFAULT = 0.0
 class SpeedometerViewModel(activity: Activity) : ViewModel() {
 
@@ -114,7 +114,8 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
                         val currentLatLng = LatLng(location.latitude, location.longitude)
                         latLng.value = currentLatLng
                         addLocation(currentLatLng)
-                        addDistance(currentLatLng)
+//                        addDistance(currentLatLng)
+                        sumDistance()
                     }
                     speed.value = location.speed
                     if(location.hasAltitude()) {
@@ -144,31 +145,57 @@ class SpeedometerViewModel(activity: Activity) : ViewModel() {
     private fun addLocation(latLng: LatLng) {
         val currentTime = Calendar.getInstance().time
         println("$currentTime")
-        if(locations.size == 0) {
-            locations.add(latLng)
-            return
-        }
-        val latLngPrevious = locations.lastOrNull()
-        if(latLng.latitude - latLngPrevious!!.latitude > DISPLACEMENT_MIN_LAT_LNG ||
-           latLng.longitude - latLngPrevious!!.longitude > DISPLACEMENT_MIN_LAT_LNG) {
-            locations.add(latLng)
-        }
+        locations.add(latLng)
+//        if(locations.size == 0) {
+//            locations.add(latLng)
+//            return
+//        }
+//        val latLngPrevious = locations.lastOrNull()
+//        if(latLng.latitude - latLngPrevious!!.latitude > DISPLACEMENT_MIN_LAT_LNG ||
+//           latLng.longitude - latLngPrevious!!.longitude > DISPLACEMENT_MIN_LAT_LNG) {
+//            locations.add(latLng)
+//        }
     }
 
     private fun addDistance(latLng: LatLng) {
         if(locations.size < 1) {
             return
         }
+
         val latLngPrevious = locations.lastOrNull()
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            latLngPrevious!!.latitude,
-            latLngPrevious!!.longitude,
-            latLng.latitude,
-            latLng.longitude,
-            results
-        )
-        distance!!.value = distance!!.value?.plus(results[0])
-        println("Distance: ${distance!!.value}")
+        if(latLng.latitude - latLngPrevious!!.latitude > DISPLACEMENT_MIN_LAT_LNG ||
+           latLng.longitude - latLngPrevious.longitude > DISPLACEMENT_MIN_LAT_LNG
+        ) {
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                latLngPrevious.latitude,
+                latLngPrevious.longitude,
+                latLng.latitude,
+                latLng.longitude,
+                results
+            )
+            distance.value = distance.value?.plus(results[0])
+            println("Distance: ${distance.value}")
+        }
+    }
+
+    private fun sumDistance() {
+        if(locations.size < 2) {
+            return
+        }
+
+        var distanceTotal = 0.0
+        for(i in 0 until locations.size - 1) {
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                locations[i].latitude,
+                locations[i].longitude,
+                locations[i + 1].latitude,
+                locations[i + 1].longitude,
+                results
+            )
+            distanceTotal = distanceTotal.plus(results[0])
+        }
+        distance.value = distanceTotal
     }
 }

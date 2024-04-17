@@ -7,6 +7,7 @@ import net.ddns.muchserver.speedometercompose.MainActivity
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
 
 
 const val INDEX_COLOR_PRIMARY = 0
@@ -18,6 +19,7 @@ const val INDEX_COLOR_BUTTON_TEXT = 4
 @Composable
 fun MainScreen(
     activity: MainActivity,
+    tripViewModel: TripViewModel,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
     settingsViewModel: SettingsViewModel,
@@ -28,6 +30,7 @@ fun MainScreen(
     if(Configuration.ORIENTATION_PORTRAIT == orientation) {
         LayoutPortrait(
             activity,
+            tripViewModel,
             speedometerViewModel,
             preferencesViewModel,
             settingsViewModel
@@ -36,6 +39,7 @@ fun MainScreen(
     else {
         LayoutLandscape(
             activity,
+            tripViewModel,
             speedometerViewModel,
             preferencesViewModel,
             settingsViewModel

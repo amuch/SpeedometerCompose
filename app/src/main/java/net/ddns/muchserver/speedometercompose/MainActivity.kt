@@ -1,5 +1,6 @@
 package net.ddns.muchserver.speedometercompose
 
+import android.app.Application
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import net.ddns.muchserver.speedometercompose.composables.MainScreen
 import net.ddns.muchserver.speedometercompose.preferences.THEME_LIGHT
 
@@ -23,8 +26,12 @@ import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModelFactory
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private lateinit var tripViewModel: TripViewModel
+    private lateinit var tripViewModelFactory: TripViewModelFactory
     private lateinit var speedometerViewModel: SpeedometerViewModel
     private lateinit var speedometerViewModelFactory: SpeedometerViewModelFactory
 
@@ -56,7 +63,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainScreen(activity, speedometerViewModel, preferencesViewModel, settingsViewModel)
+                    MainScreen(
+                        activity,
+                        tripViewModel,
+                        speedometerViewModel,
+                        preferencesViewModel,
+                        settingsViewModel
+                    )
                 }
             }
         }
@@ -73,6 +86,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeViewModels() {
+        tripViewModelFactory = TripViewModelFactory(this.application as Application)
+        tripViewModel = ViewModelProvider(this, tripViewModelFactory)[TripViewModel::class.java]
+
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
         settingsViewModel.settingsVisible.observe(this) {}
         settingsViewModel.screenAwake.observe(this) {

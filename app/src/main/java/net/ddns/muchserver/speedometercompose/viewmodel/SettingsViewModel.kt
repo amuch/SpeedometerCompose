@@ -4,16 +4,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import net.ddns.muchserver.speedometercompose.preferences.THEME_DARK
-import java.lang.StrictMath.floor
 
-const val HUE_BLUE = 210.0f
+const val HUE_BLUE = 240.0f
 const val HUE_BLUE_DARK = 250.0f
-const val HUE_CYAN = 190.0f
+const val HUE_CYAN = 180.0f
 const val HUE_GREEN = 115.0f
 const val HUE_MAGENTA = 295.0f
 const val HUE_ORANGE = 30.0f
-const val HUE_RED = 10.0f
-const val HUE_YELLOW = 60.0f;
+const val HUE_RED = 0.0f
+const val HUE_YELLOW = 60.0f
 class SettingsViewModel: ViewModel() {
     val settingsVisible: MutableLiveData<Boolean> = MutableLiveData(false)
     val closeSettings = { settingsVisible.value = false }
@@ -30,8 +29,8 @@ class SettingsViewModel: ViewModel() {
 
     val colorScheme: MutableLiveData<List<Color>> = MutableLiveData(schemeLight(0))
     val indexScheme: MutableLiveData<Int> = MutableLiveData(0)
-    val hueCurrent: MutableLiveData<Float> = MutableLiveData(HUE_ORANGE)
-    val hueTrip: MutableLiveData<Float> = MutableLiveData(HUE_BLUE)
+    val hueCurrent: MutableLiveData<Float> = MutableLiveData(HUE_BLUE)
+    val hueTrip: MutableLiveData<Float> = MutableLiveData(HUE_YELLOW)
 
     val setColorScheme = { theme: String, indexTheme: Int ->
         if(theme == THEME_DARK) {
@@ -41,17 +40,8 @@ class SettingsViewModel: ViewModel() {
         }
         else  {
             colorScheme.value = schemeLight(indexTheme)
-            hueCurrent.value = HUE_BLUE_DARK
+            hueCurrent.value = HUE_BLUE
             hueTrip.value = HUE_YELLOW
-        }
-    }
-
-    val setIndexScheme = { indexTheme: Float ->
-        val floor = floor(indexTheme.toDouble()).toInt()
-        if(floor != indexScheme.value!!) {
-            println("Set index: $floor")
-            indexScheme.value = floor
-//            setColorScheme(colorScheme.value!!, floor)
         }
     }
 
@@ -118,7 +108,7 @@ class SettingsViewModel: ViewModel() {
             }
             1 -> {
                 return listOf(
-                    Color(0xFF41ABFF),
+                    Color(0xFFFFFFFF), //Color(0xFF41ABFF),
                     Color(0xFFFFFFFF),
                     Color(0xFFFFFFFF),
                     Color(0xFF006CFF),
@@ -127,11 +117,11 @@ class SettingsViewModel: ViewModel() {
             }
             2 -> {
                 return listOf(
-                    Color(0xFFFFFCF3),
-                    Color(0xFFFFFCF3),
-                    Color(0xFFEEE4AD),
-                    Color(0xFF879070),
-                    Color(0xFF2E2E2C),
+                    Color(0xFFBF98C2),
+                    Color(0xFFF7EDF7),
+                    Color(0xFFF7EDF7),
+                    Color(0xFF711091),
+                    Color(0xFF404040),
                 )
             }
             3 -> {

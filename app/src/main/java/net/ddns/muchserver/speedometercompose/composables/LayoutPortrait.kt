@@ -17,10 +17,12 @@ import net.ddns.muchserver.speedometercompose.MainActivity
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
 
 @Composable
 fun LayoutPortrait(
     activity: MainActivity,
+    tripViewModel: TripViewModel,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
     settingsViewModel: SettingsViewModel
@@ -50,6 +52,7 @@ fun LayoutPortrait(
                 .fillMaxHeight()
                 .background(color = Color.Transparent),
             activity = activity,
+            tripViewModel = tripViewModel,
             speedometerViewModel = speedometerViewModel,
             preferencesViewModel = preferencesViewModel,
             settingsViewModel = settingsViewModel

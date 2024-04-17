@@ -30,6 +30,7 @@ import net.ddns.muchserver.speedometercompose.service.ServiceForeground
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
+import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
 import java.lang.StrictMath.floor
 
 
@@ -43,6 +44,7 @@ const val INDEX_WAKE_SCREEN = 5
 fun ControlsColumn(
     modifier: Modifier,
     activity: MainActivity,
+    tripViewModel: TripViewModel,
     speedometerViewModel: SpeedometerViewModel,
     preferencesViewModel: PreferencesViewModel,
     settingsViewModel: SettingsViewModel
@@ -65,6 +67,8 @@ fun ControlsColumn(
     preferencesViewModel.readFromDataStore.observe(activity) { preferences ->
         standardUnits = preferences.standardUnits
     }
+
+    val checkPoints by tripViewModel.checkPoints.observeAsState(listOf())
 
     Column(
         modifier = modifier
@@ -100,7 +104,7 @@ fun ControlsColumn(
             messages = arrayOf(
                 "Location ON",
                 "Location OFF",
-                "This setting requests location updates."
+                "This setting requests location updates. This is necessary for the app's core functionality."
             ),
             index = INDEX_LOCATION_UPDATES
         )
@@ -195,7 +199,7 @@ fun ControlsColumn(
             messages = arrayOf(
                 "Screen ON",
                 "Screen OFF",
-                "This setting assures that the screen stays on while the app is running. This will increase battery usage."
+                "This setting assures that the screen stays on while the app is running. This will reduce battery life."
             ),
             index = INDEX_WAKE_SCREEN
         )
@@ -206,5 +210,25 @@ fun ControlsColumn(
             speedometerViewModel = speedometerViewModel,
             settingsViewModel = settingsViewModel
         )
+
+        ButtonAddCheckPoint(
+            modifier = Modifier
+                .padding(10.dp),
+            tripViewModel = tripViewModel,
+            speedometerViewModel = speedometerViewModel,
+            settingsViewModel = settingsViewModel
+        )
+
+        Button(
+            modifier = Modifier
+                .padding(10.dp),
+            onClick = {
+                for(checkPoint in checkPoints) {
+                    println("${checkPoint.latitude} ${checkPoint.longitude} ${checkPoint.date}")
+                }
+            }
+        ) {
+            Text("Print CheckPoints")
+        }
     }
 }
