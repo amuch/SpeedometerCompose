@@ -24,8 +24,10 @@ import net.ddns.muchserver.speedometercompose.MainActivity
 import net.ddns.muchserver.speedometercompose.preferences.KEY_INDEX_THEME
 import net.ddns.muchserver.speedometercompose.preferences.KEY_STANDARD_UNITS
 import net.ddns.muchserver.speedometercompose.preferences.KEY_THEME
+import net.ddns.muchserver.speedometercompose.preferences.KEY_UPDATE_INTERVAL
 import net.ddns.muchserver.speedometercompose.preferences.THEME_DARK
 import net.ddns.muchserver.speedometercompose.preferences.THEME_LIGHT
+import net.ddns.muchserver.speedometercompose.preferences.UPDATE_INTERVAL_DEFAULT
 import net.ddns.muchserver.speedometercompose.service.ServiceForeground
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
@@ -59,36 +61,23 @@ fun ControlsColumn(
     }
 
     var indexTheme by remember { mutableStateOf(0) }
+    var updateInterval by remember { mutableStateOf(UPDATE_INTERVAL_DEFAULT) }
     preferencesViewModel.readFromDataStore.observe(activity) { preferences ->
         indexTheme = preferences.indexTheme
+        updateInterval = preferences.updateInterval
     }
+
+
+
 
     var standardUnits by remember { mutableStateOf(true) }
     preferencesViewModel.readFromDataStore.observe(activity) { preferences ->
         standardUnits = preferences.standardUnits
     }
 
-    val checkPoints by tripViewModel.checkPoints.observeAsState(listOf())
-
     Column(
         modifier = modifier
     ) {
-        Button(
-            modifier = Modifier
-                .padding(20.dp)
-                .align(alignment = Alignment.End),
-            onClick = {
-                settingsViewModel.closeSettings()
-                settingsViewModel.setIndexOpenSetting(0)
-            },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = settingsViewModel.colorScheme.value!![INDEX_COLOR_BUTTON_BACKGROUND],
-                contentColor = settingsViewModel.colorScheme.value!![INDEX_COLOR_BUTTON_TEXT]
-            )
-        ) {
-            Text("X")
-        }
-
         val requestingUpdates: Boolean by speedometerViewModel.requestingUpdates.observeAsState(false)
         SettingRow(
             modifier = Modifier
@@ -119,7 +108,7 @@ fun ControlsColumn(
             messages = arrayOf(
                 "Standard Units",
                 "SI Units",
-                "This setting determines the units in which the speed, distance, and altitude are reported. When toggled, speed will be reported in miles per hour, distance in miles, and altitude in feet. Otherwise, speed will be reported in kilometers per hour, distance in kilometers, and elevation in meters."
+                "This setting determines the units in which the speed, distance, and altitude are reported. When toggled, speed will be reported in miles per hour, distance in miles, and altitude in feet. Otherwise, speed will be reported in kilometers per hour, distance in kilometers, and altitude in meters."
             ),
             index = INDEX_UNITS
         )
@@ -193,6 +182,48 @@ fun ControlsColumn(
             modifier = Modifier
                 .fillMaxWidth(),
             settingsViewModel = settingsViewModel,
+            isSet = true,
+            setCheckedOn = {
+//                preferencesViewModel.saveToDataStore(KEY_THEME, THEME_DARK)
+            },
+            setCheckedOff = {
+//                preferencesViewModel.saveToDataStore(KEY_THEME, THEME_LIGHT)
+            },
+            messages = arrayOf(
+                "Minutes",
+                "Seconds",
+                "This setting is responsible for setting the frequency with which the app will place a marker on the map."
+            ),
+            index = INDEX_COLOR_SCHEME,
+            composable = {
+                var sliderPosition by remember { mutableStateOf(updateIntervalToIndex(updateInterval)) }
+                Slider(
+                    modifier = Modifier
+                        .padding(20.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = settingsViewModel.colorScheme.value!![INDEX_COLOR_BUTTON_BACKGROUND],
+                        activeTrackColor = settingsViewModel.colorScheme.value!![INDEX_COLOR_BUTTON_TEXT],
+                        inactiveTickColor = settingsViewModel.colorScheme.value!![INDEX_COLOR_BUTTON_TEXT]
+                    ),
+                    value = sliderPosition,
+                    onValueChange = {
+                        sliderPosition = it
+                        val updateIntervalSelected = indexToUpdateInterval(it)
+                        if(updateIntervalSelected != updateInterval) {
+                            updateInterval = updateIntervalSelected
+                            preferencesViewModel.saveToDataStore(KEY_UPDATE_INTERVAL, updateIntervalSelected)
+                        }
+                    },
+                    steps = 3,
+                    valueRange = 0f..4f
+                )
+            }
+        )
+
+        SettingRow(
+            modifier = Modifier
+                .fillMaxWidth(),
+            settingsViewModel = settingsViewModel,
             isSet = screenAwake,
             setCheckedOn = { settingsViewModel.screenOn() },
             setCheckedOff = { settingsViewModel.screenOff() },
@@ -210,25 +241,25 @@ fun ControlsColumn(
             speedometerViewModel = speedometerViewModel,
             settingsViewModel = settingsViewModel
         )
+    }
+}
 
-        ButtonAddCheckPoint(
-            modifier = Modifier
-                .padding(10.dp),
-            tripViewModel = tripViewModel,
-            speedometerViewModel = speedometerViewModel,
-            settingsViewModel = settingsViewModel
-        )
+fun indexToUpdateInterval(index: Float): Long {
+    return when(index) {
+        0f -> 5000L
+        1f -> 30000L
+        2f -> UPDATE_INTERVAL_DEFAULT
+        3f -> 90000L
+        else -> 300000L
+    }
+}
 
-        Button(
-            modifier = Modifier
-                .padding(10.dp),
-            onClick = {
-                for(checkPoint in checkPoints) {
-                    println("${checkPoint.latitude} ${checkPoint.longitude} ${checkPoint.date}")
-                }
-            }
-        ) {
-            Text("Print CheckPoints")
-        }
+fun updateIntervalToIndex(interval: Long): Float {
+    return when (interval) {
+        5000L -> 0.0f
+        30000L -> 1.0f
+        UPDATE_INTERVAL_DEFAULT -> 2.0f
+        90000L -> 3.0f
+        else -> 4.0f
     }
 }

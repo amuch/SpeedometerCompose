@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.model.LatLng
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_FEET
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_KM
 import net.ddns.muchserver.speedometercompose.viewmodel.CONVERSION_METERS_TO_MILES
@@ -38,7 +37,7 @@ import kotlin.math.sin
 
 val DECIMAL_FORMAT = DecimalFormat("#.##")
 val SCALE_FORMAT = DecimalFormat("#")
-val COORDINATE_FORMAT = DecimalFormat("#.####")
+val ORDINATE_FORMAT = DecimalFormat("#.####")
 @Composable
 fun SpeedometerGauge(
     modifier: Modifier,
@@ -141,11 +140,17 @@ fun SpeedometerGauge(
         )
         val denominator = 10
         var step = 1
-        if(scaleMax > 10) {
+        if(scaleMax > 4) {
             step = 5
         }
-        if(scaleMax > 50) {
-          step = 10
+        if(scaleMax > 30) {
+            step = 10
+        }
+        if(scaleMax > 60) {
+          step = 15
+        }
+        if(scaleMax > 100) {
+            step = 25
         }
 
         for(i in 0 .. scaleMax.toInt() step step) {
@@ -328,17 +333,17 @@ fun scaleMax(speed: Float, standardUnits: Boolean): Float {
 
 fun formatLatitude(latitude: Double): String {
     if(latitude < 0) {
-        return "${COORDINATE_FORMAT.format(-1 * latitude)} S"
+        return "${ORDINATE_FORMAT.format(-1 * latitude)} S"
     }
 
-    return "${COORDINATE_FORMAT.format(latitude)} N"
+    return "${ORDINATE_FORMAT.format(latitude)} N"
 }
 
 fun formatLongitude(longitude: Double): String {
     if(longitude < 0) {
-        return "${COORDINATE_FORMAT.format(-1 * longitude)} W"
+        return "${ORDINATE_FORMAT.format(-1 * longitude)} W"
     }
-    return "${COORDINATE_FORMAT.format(longitude)} E"
+    return "${ORDINATE_FORMAT.format(longitude)} E"
 }
 
 fun calculateDirection(bearing: Float): String {

@@ -19,4 +19,7 @@ interface CheckPointDao {
     @Query("SELECT * FROM $TABLE_CHECKPOINT")
     fun getAllCheckPoints(): LiveData<List<CheckPoint>>
 
+    @Query("SELECT * FROM $TABLE_CHECKPOINT WHERE $COLUMN_ID_TRIP_FOREIGN = :idTrip")
+    fun getCheckPointsCurrent(idTrip: Long): LiveData<List<CheckPoint>>
+
 }

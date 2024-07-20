@@ -14,12 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import net.ddns.muchserver.speedometercompose.composables.MainScreen
 import net.ddns.muchserver.speedometercompose.preferences.THEME_LIGHT
+import net.ddns.muchserver.speedometercompose.preferences.UPDATE_INTERVAL_DEFAULT
 
 import net.ddns.muchserver.speedometercompose.ui.theme.SpeedometerComposeTheme
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
@@ -90,7 +89,8 @@ class MainActivity : ComponentActivity() {
         tripViewModel = ViewModelProvider(this, tripViewModelFactory)[TripViewModel::class.java]
 
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        settingsViewModel.settingsVisible.observe(this) {}
+        settingsViewModel.menuVisible.observe(this) {}
+        settingsViewModel.optionGaugeVisible.observe(this) {}
         settingsViewModel.screenAwake.observe(this) {
             if(it) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -101,6 +101,9 @@ class MainActivity : ComponentActivity() {
         }
         settingsViewModel.colorScheme.observe(this){}
 
+        speedometerViewModelFactory = SpeedometerViewModelFactory(this, tripViewModel)
+        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
+
         theme = THEME_LIGHT
         preferencesViewModel = ViewModelProvider(this)[PreferencesViewModel::class.java]
         preferencesViewModel.readFromDataStore.observe(this) { preferences ->
@@ -109,10 +112,12 @@ class MainActivity : ComponentActivity() {
             settingsViewModel.setColorScheme(theme, indexTheme)
             standardUnits = preferences.standardUnits
             settingsViewModel.standardUnits.value = standardUnits
+
+            speedometerViewModel.updateInterval.value = preferences.updateInterval
+            println("Pref Store: ${preferences.updateInterval}")
         }
 
-        speedometerViewModelFactory = SpeedometerViewModelFactory(this)
-        speedometerViewModel = ViewModelProvider(this, speedometerViewModelFactory)[SpeedometerViewModel::class.java]
+
     }
 
     private fun hideSystemUI() {

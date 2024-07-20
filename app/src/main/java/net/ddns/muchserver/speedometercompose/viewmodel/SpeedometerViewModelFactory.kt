@@ -7,11 +7,14 @@ import com.google.android.gms.maps.model.LatLng
 import java.lang.IllegalArgumentException
 
 const val ERROR_UNKNOWN_VIEW_MODEL = "Unknown View Model Class"
-class SpeedometerViewModelFactory(private val activity: Activity): ViewModelProvider.Factory {
+class SpeedometerViewModelFactory(
+    private val activity: Activity,
+    val tripViewModel: TripViewModel,
+): ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(SpeedometerViewModel::class.java)) {
-            return SpeedometerViewModel(activity) as T
+            return SpeedometerViewModel(activity, tripViewModel) as T
         }
 
         throw IllegalArgumentException(ERROR_UNKNOWN_VIEW_MODEL)

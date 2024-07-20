@@ -1,12 +1,16 @@
 package net.ddns.muchserver.speedometercompose.composables
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -49,13 +53,6 @@ fun Map(
         cameraPositionState = cameraPositionState,
 //        properties = MapProperties(mapType = MapType.NORMAL)
     ) {
-        Marker(
-            position = latLngCurrent,
-            title = "${formatLatitude(latLngCurrent.latitude)}, ${formatLongitude(latLngCurrent.longitude)}",
-            snippet = "Current Location",
-            alpha = 0.8f,
-            icon = BitmapDescriptorFactory.defaultMarker(settingsViewModel.hueCurrent.value!!)
-        )
         for(i in 0 until speedometerViewModel.listLocations.value!!.size) {
             val latitude = speedometerViewModel.listLocations.value!![i].latitude
             val longitude = speedometerViewModel.listLocations.value!![i].longitude
@@ -67,5 +64,26 @@ fun Map(
                 icon = BitmapDescriptorFactory.defaultMarker(settingsViewModel.hueTrip.value!!)
             )
         }
+        Marker(
+            position = latLngCurrent,
+            title = "${formatLatitude(latLngCurrent.latitude)}, ${formatLongitude(latLngCurrent.longitude)}",
+            snippet = "Current Location",
+            alpha = 0.8f,
+            icon = BitmapDescriptorFactory.defaultMarker(settingsViewModel.hueCurrent.value!!)
+        )
+//        if(speedometerViewModel.checkPoints.value!!.isNotEmpty()) {
+//            for (i in 0 until speedometerViewModel.checkPoints.value!!.size) {
+//                val latitude = speedometerViewModel.checkPoints.value!![i].latitude
+//                val longitude = speedometerViewModel.checkPoints.value!![i].longitude
+//                val latLng = LatLng(latitude, longitude)
+//                Marker(
+//                    position = latLng,
+//                    title = "${formatLatitude(latitude)}, ${formatLongitude(longitude)}",
+//                    snippet = "Marker",
+//                    alpha = 0.8f,
+//                    icon = BitmapDescriptorFactory.defaultMarker(settingsViewModel.hueTrip.value!!)
+//                )
+//            }
+//        }
     }
 }

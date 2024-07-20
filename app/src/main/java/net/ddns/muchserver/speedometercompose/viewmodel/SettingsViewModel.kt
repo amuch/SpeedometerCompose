@@ -3,6 +3,7 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import net.ddns.muchserver.speedometercompose.composables.GaugeOptions
 import net.ddns.muchserver.speedometercompose.preferences.THEME_DARK
 
 const val HUE_BLUE = 240.0f
@@ -14,9 +15,14 @@ const val HUE_ORANGE = 30.0f
 const val HUE_RED = 0.0f
 const val HUE_YELLOW = 60.0f
 class SettingsViewModel: ViewModel() {
-    val settingsVisible: MutableLiveData<Boolean> = MutableLiveData(false)
-    val closeSettings = { settingsVisible.value = false }
-    val openSettings = { settingsVisible.value = true }
+    val menuVisible: MutableLiveData<MenuVisible> = MutableLiveData(MenuVisible.MENU_MAP)
+    val setMenuVisible = { menuEnum: MenuVisible -> menuVisible.value = menuEnum }
+
+    val optionGaugeVisible: MutableLiveData<GaugeOptions> = MutableLiveData(GaugeOptions.GAUGE_MAP)
+    val setOptionGaugeVisible = { gaugeOption: GaugeOptions -> optionGaugeVisible.value = gaugeOption }
+
+    val optionGaugeSelectorVisible: MutableLiveData<Boolean> = MutableLiveData(false)
+    val setOptionGaugeSelectorVisible = { selectorVisible: Boolean -> optionGaugeSelectorVisible.value = selectorVisible }
 
     val screenAwake: MutableLiveData<Boolean> = MutableLiveData(false)
     val screenOn = { screenAwake.value = true }
@@ -144,4 +150,10 @@ class SettingsViewModel: ViewModel() {
             }
         }
     }
+}
+
+enum class MenuVisible {
+    MENU_MAP,
+    MENU_CONTROLS,
+    MENU_TRIP
 }

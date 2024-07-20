@@ -18,12 +18,15 @@ const val PREFERENCES = "preferences"
 const val KEY_THEME = "theme"
 const val KEY_INDEX_THEME = "indexTheme"
 const val KEY_STANDARD_UNITS = "standardUnits"
+const val KEY_UPDATE_INTERVAL = "updateInterval"
+const val UPDATE_INTERVAL_DEFAULT = 45000L
 
 class DataStoreRepository(context: Context) {
     private object PreferenceKeys {
         val theme = preferencesKey<String>(KEY_THEME)
         val indexTheme = preferencesKey<Int>(KEY_INDEX_THEME)
         val standardUnits = preferencesKey<Boolean>(KEY_STANDARD_UNITS)
+        val updateInterval = preferencesKey<Long>(KEY_UPDATE_INTERVAL)
     }
 
     private val dataStore: DataStore<Preferences> = context.createDataStore(
@@ -36,6 +39,7 @@ class DataStoreRepository(context: Context) {
                 KEY_THEME -> preference[PreferenceKeys.theme] = any as String
                 KEY_INDEX_THEME -> preference[PreferenceKeys.indexTheme] = any as Int
                 KEY_STANDARD_UNITS -> preference[PreferenceKeys.standardUnits] = any as Boolean
+                KEY_UPDATE_INTERVAL -> preference[PreferenceKeys.updateInterval] = any as Long
             }
         }
     }
@@ -54,6 +58,7 @@ class DataStoreRepository(context: Context) {
             val theme = preferences[PreferenceKeys.theme] ?: THEME_LIGHT
             val indexTheme = preferences[PreferenceKeys.indexTheme] ?: 0
             val standardUnits = preferences[PreferenceKeys.standardUnits] ?: true
-            UserPreferences(theme, indexTheme, standardUnits)
+            val updateInterval = preferences[PreferenceKeys.updateInterval] ?: UPDATE_INTERVAL_DEFAULT
+            UserPreferences(theme, indexTheme, standardUnits, updateInterval)
     }
 }

@@ -4,7 +4,9 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Paint
 import android.os.IBinder
+import android.widget.RemoteViews.RemoteView
 import androidx.core.app.NotificationCompat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,9 @@ class ServiceForeground: Service() {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(TITLE_FOREGROUND_SERVICE)
             .setContentText("")
+//            .setStyle(
+//                NotificationCompat
+//            )
             .build()
 
         startForeground(ID_FOREGROUND_SERVICE, notification)
