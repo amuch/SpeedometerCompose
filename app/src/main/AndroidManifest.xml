@@ -31,7 +31,7 @@
         </activity>
         <service android:name=".service.ServiceForeground"
             android:foregroundServiceType="location" />
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAeDSzxJ2Hw6xrMFqaRcLdeq4WUhC2_xhA"/>
+
     </application>
 
 </manifest>
