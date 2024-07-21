@@ -3,7 +3,7 @@ package net.ddns.muchserver.speedometercompose.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import net.ddns.muchserver.speedometercompose.composables.GaugeOptions
+import net.ddns.muchserver.speedometercompose.GaugeOptions
 import net.ddns.muchserver.speedometercompose.preferences.THEME_DARK
 
 const val HUE_BLUE = 240.0f

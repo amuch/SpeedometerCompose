@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -21,11 +20,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import net.ddns.muchserver.speedometercompose.MainActivity
-import net.ddns.muchserver.speedometercompose.viewmodel.MenuVisible
 import net.ddns.muchserver.speedometercompose.viewmodel.PreferencesViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SettingsViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.SpeedometerViewModel
 import net.ddns.muchserver.speedometercompose.viewmodel.TripViewModel
+import net.ddns.muchserver.speedometercompose.GaugeOptions
 
 
 const val INDEX_COLOR_PRIMARY = 0
@@ -78,7 +77,7 @@ fun MainScreen(
             .fillMaxSize()
             .background(brush = brushBackground)
     ) {
-        Speedometer(
+        SpeedometerGauge(
             modifier = modifierSpeedometerGauge.then(
                 Modifier
                     .align(
@@ -88,8 +87,6 @@ fun MainScreen(
                     .padding(10.dp)
                     .background(color = Color.Transparent)
             ),
-            gaugeOption = gaugeOption,
-            onGaugeOptionChange = onGaugeOptionChange,
             speedometerViewModel = speedometerViewModel,
             settingsViewModel = settingsViewModel
         )
@@ -110,20 +107,5 @@ fun MainScreen(
             preferencesViewModel = preferencesViewModel,
             settingsViewModel = settingsViewModel
         )
-//        MapTab(
-//            modifier = modifierMapTab.then(
-//                Modifier
-//                    .align(
-//                        if(Configuration.ORIENTATION_PORTRAIT == orientation) Alignment.BottomCenter
-//                        else Alignment.CenterEnd
-//                    )
-//                    .background(color = Color.Transparent)
-//            ),
-//            activity = activity,
-//            tripViewModel = tripViewModel,
-//            speedometerViewModel = speedometerViewModel,
-//            preferencesViewModel = preferencesViewModel,
-//            settingsViewModel = settingsViewModel
-//        )
     }
 }
